@@ -1,6 +1,6 @@
 //go:build linux
 
-// wrap-agent is the guest half of wrap. libkrun's init runs it as the VM
+// box-agent is the guest half of box. libkrun's init runs it as the VM
 // workload; it applies the boot configuration the host wrote into the
 // rootfs, then serves exec and file operations over vsock until the host
 // asks it to shut down. When it exits, init syncs and powers the VM off.
@@ -27,7 +27,7 @@ import (
 
 func main() {
 	log.SetFlags(0)
-	log.SetPrefix("wrap-agent: ")
+	log.SetPrefix("box-agent: ")
 	if len(os.Args) > 1 && os.Args[1] == "--version" {
 		fmt.Println(agent.Version)
 		return
@@ -192,7 +192,7 @@ func setTimezone(name string) error {
 	return os.Symlink(zone, "/etc/localtime")
 }
 
-// trustCA installs wrap's interception CA into the distro trust store,
+// trustCA installs box's interception CA into the distro trust store,
 // rebuilding the bundle only when the anchor changed.
 func trustCA(path string) error {
 	pem, err := os.ReadFile(path)
@@ -204,9 +204,9 @@ func trustCA(path string) error {
 		anchor string
 		update []string
 	}{
-		{"/etc/ca-certificates/trust-source/anchors", "wrap-ca.crt", []string{"update-ca-trust", "extract"}},
-		{"/usr/local/share/ca-certificates", "wrap-ca.crt", []string{"update-ca-certificates"}},
-		{"/etc/pki/ca-trust/source/anchors", "wrap-ca.crt", []string{"update-ca-trust", "extract"}},
+		{"/etc/ca-certificates/trust-source/anchors", "box-ca.crt", []string{"update-ca-trust", "extract"}},
+		{"/usr/local/share/ca-certificates", "box-ca.crt", []string{"update-ca-certificates"}},
+		{"/etc/pki/ca-trust/source/anchors", "box-ca.crt", []string{"update-ca-trust", "extract"}},
 	}
 	for _, store := range stores {
 		if info, err := os.Stat(store.dir); err != nil || !info.IsDir() {

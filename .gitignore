@@ -1,0 +1,3 @@
+internal/agentbin/bin/box-agent-*
+/bin/
+/cmd/box/box

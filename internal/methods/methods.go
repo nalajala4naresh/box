@@ -1,5 +1,5 @@
 // Package methods holds the fast in-VM file methods for an already-running
-// wrap.
+// box.
 //
 // Selectors match omp/pi: `file`, `file:5`, `file:5-10`, `file:5:2`.
 package methods
@@ -292,7 +292,7 @@ func execSh(sb *sandbox.Sandbox, script string) (int, error) {
 	os.Stdout.Write(out.Stdout)
 	os.Stderr.Write(out.Stderr)
 	if err != nil {
-		return 1, fmt.Errorf("wrap method: %w", err)
+		return 1, fmt.Errorf("box method: %w", err)
 	}
 	return out.Code, nil
 }
@@ -304,16 +304,16 @@ func writeGuest(sb *sandbox.Sandbox, guest string, content *string) (int, error)
 	} else {
 		var err error
 		if data, err = io.ReadAll(os.Stdin); err != nil {
-			return 1, fmt.Errorf("read stdin for wrap write: %w", err)
+			return 1, fmt.Errorf("read stdin for box write: %w", err)
 		}
 	}
 	if parent := path.Dir(guest); parent != "" && parent != "." {
 		if err := sb.Mkdir(parent, sb.Spec.User); err != nil {
-			return 1, fmt.Errorf("create wrap write parent: %w", err)
+			return 1, fmt.Errorf("create box write parent: %w", err)
 		}
 	}
 	if err := sb.WriteFile(guest, data, 0o644, sb.Spec.User); err != nil {
-		return 1, fmt.Errorf("wrap write: %w", err)
+		return 1, fmt.Errorf("box write: %w", err)
 	}
 	return 0, nil
 }
