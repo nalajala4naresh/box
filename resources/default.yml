@@ -1,0 +1,162 @@
+# box's embedded defaults. This file is the strict schema contract:
+# unknown keys are errors, so overlays must use exactly these shapes.
+#
+# Precedence (later wins):
+#   embedded defaults → ~/.config/box/config.yml (first run writes every
+#   default here commented out, so the file documents without changing)
+#   → ~/.config/box/config.d/*.yml (lexical order; your own drop-ins)
+#   → BOXFILE in the workspace → --config PATH / $BOX_CONFIG.
+#
+# Merge rules: mappings merge recursively; `agents`, `secrets`, and `layers`
+# merge by `name`, `env`, and `id`. `network.allow` and `network.deny` merge
+# additively (entries append, duplicates drop); deny still wins on conflict,
+# so blocking a default-allowed host stays expressible. An explicit empty
+# keyed list clears that default list; every other list replaces its default.
+
+# sandbox: the VM image and its sizing. Replaces the old flat `image:` key
+# and the old `build:` (cpus/memory/memory_max) block.
+sandbox:
+  # Base image. `ghcr.io/tobi/box:desktop` adds XFCE on :1, Chrome with CDP
+  # and agent-browser attached to it (see Containerfile.desktop).
+  image: ghcr.io/tobi/wrap:latest
+  # vCPUs for build and session VMs.
+  cpus: 2
+  # Initial guest memory in MiB.
+  memory: 8192
+  # Memory ceiling in MiB (ballooning); must be >= memory.
+  memory_max: 8192
+
+env:
+  TERM: xterm-256color
+
+# secrets: host credentials scoped to named hosts. The guest never sees the
+# real value: every guest env var holds the constant stand-in
+# `NOT-AN-ACTUAL-KEY`, and box's TLS interception substitutes the
+# real value only on matching traffic to `hosts`.
+#
+# Each entry:
+# - env:      guest environment variable name.
+# - source:   exactly one of `$(command)`, `$HOST_VAR`, `file:/path`, or
+#             a literal string.
+# - headers:  outgoing header templates carrying the credential, as
+#             name → value (e.g. `Authorization: "Bearer $GH_TOKEN"`,
+#             `X-Api-Key: $ANTHROPIC_API_KEY`). A secret with entries here
+#             gets header injection; a declared `Authorization` header
+#             covering github.com additionally doubles as git's
+#             http.extraheader.
+# - hosts:    map of host → `{allow: true}`. Only the allowed hosts of live
+#             (resolved) secrets fold into the network allowlist; a skipped
+#             secret whitelists nothing and `network.deny` still wins.
+# - optional: when true, a resolution failure (missing host var, failed
+#             command, empty result) skips the secret instead of aborting
+#             before VM work. Use for passthroughs.
+secrets:
+  - env: GH_TOKEN
+    source: $(gh auth token)
+    headers:
+      Authorization: "Bearer $GH_TOKEN"
+    hosts:
+      github.com: {allow: true}
+      api.github.com: {allow: true}
+      '*.githubusercontent.com': {allow: true}
+      '*.githubassets.com': {allow: true}
+
+  # Passthroughs: forwarded only when the host variable exists. A missing
+  # host variable skips the entry quietly (optional: true) and whitelists
+  # nothing.
+  - env: OPENROUTER_API_KEY
+    source: $OPENROUTER_API_KEY
+    headers:
+      Authorization: "Bearer $OPENROUTER_API_KEY"
+    optional: true
+    hosts:
+      openrouter.ai: {allow: true}
+
+  - env: OPENAI_API_KEY
+    source: $OPENAI_API_KEY
+    headers:
+      Authorization: "Bearer $OPENAI_API_KEY"
+    optional: true
+    hosts:
+      api.openai.com: {allow: true}
+
+  - env: ANTHROPIC_API_KEY
+    source: $ANTHROPIC_API_KEY
+    headers:
+      X-Api-Key: $ANTHROPIC_API_KEY
+    optional: true
+    hosts:
+      api.anthropic.com: {allow: true}
+
+  # - env: EXTRA_TOKEN
+  #   source: $EXTRA_TOKEN
+  #   headers:
+  #     X-Api-Token: $EXTRA_TOKEN
+  #   hosts:
+  #     api.example.com: {allow: true}
+
+network:
+  allow_everything: false
+
+  # Global egress allowlist. Secret `hosts` with `allow: true` are folded in
+  # automatically (see above); `deny` still wins on conflict.
+  allow:
+    - mise.run
+    - .github.com
+    - .githubusercontent.com
+    # GitHub's static assets (CSS/JS); without it github.com renders unstyled
+    # in the desktop image's browser.
+    - .githubassets.com
+    - .jdx.dev
+    - .npmjs.org
+    - .pkgbuild.com
+    - files.pythonhosted.org
+    - .pythonhosted.org
+    - pypi.org
+    - pypi.python.org
+    - .r2.dev
+    - .rust-lang.org
+    - .rustup.rs
+    # mise verifies GitHub artifact attestations for aqua tools via Sigstore.
+    - .sigstore.dev
+
+  # Global egress denylist. Same host grammar as `allow`: an exact host, or
+  # a leading `.` for the apex plus subdomains. Entries here beat `allow`
+  # and beat folded secret hosts.
+  # deny:
+  #   - example.com
+
+# Agents installed into the shared agent layer. `host-copy` is opt-in:
+# uncomment to import that host directory into the project VM (never
+# into the shared snapshot). `guest` overrides the destination.
+agents:
+  - name: pi
+    package: mise:pi@latest
+    # host-copy: ~/.pi
+  - name: omp
+    package: github:can1357/oh-my-pi@latest
+    # host-copy: ~/.omp
+  - name: codex
+    package: mise:codex@latest
+    # host-copy: ~/.codex
+  - name: claude
+    package: mise:claude@latest
+    # host-copy: ~/.claude
+  # - name: try
+  #   package: github:tobi/try@latest
+
+
+layers:
+  - id: packages
+    script: |
+      sudo pacman -Sy --needed --noconfirm nano github-cli
+      mise use --global --pin --yes --jobs 4 -- uv@latest python@latest
+
+  - id: dotfiles
+    script: |
+      # example:
+      # curl github.com/your/dotfiles | bash
+
+      echo "* You are in the vm's $SHELL"
+      mise list
+      echo
