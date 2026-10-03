@@ -1,6 +1,6 @@
 # box (Go + libkrun)
 
-A Go implementation of [tobi/box](https://github.com/tobi/box): run commands and coding agents in a disposable Arch Linux microVM built around the folder you are in. The original is Rust on top of microsandbox; this port drives [libkrun](https://github.com/containers/libkrun) directly through [libkrun-go](https://github.com/nalajala4naresh/libkrun-go) and implements the pieces microsandbox used to provide (OCI pulls, layer snapshots, a guest agent, the egress policy, and secret substitution) itself.
+A Go implementation of [tobi/wrap](https://github.com/tobi/wrap): run commands and coding agents in a disposable Arch Linux microVM built around the folder you are in. The original is Rust on top of microsandbox; this port drives [libkrun](https://github.com/containers/libkrun) directly through [libkrun-go](https://github.com/nalajala4naresh/libkrun-go) and implements the pieces microsandbox used to provide (OCI pulls, layer snapshots, a guest agent, the egress policy, and secret substitution) itself.
 
 The CLI, config schema, merge rules, layer caching, and session semantics match the Rust version, so its README applies: `box`, `box -- CMD`, `box -c DIR ls|read|grep|find|write|bash`, `box init|allow|config|log`, `--reset`, `--rebuild`, `--cpus`, `--memory`, `--memory-boot`, `--config`, `--network-allow-everything`/`--yolo`, `--skill`.
 
@@ -41,7 +41,7 @@ box (host CLI)                         box __vm <sandbox>  (detached, one per ru
                                                    exec (pipes or pty) · file ops
 ```
 
-- **Images and snapshots.** `ghcr.io/tobi/box:*` is pulled with go-containerregistry (manifest re-checked on every image-stage build, layers cached) and flattened into a rootfs directory, honoring OCI whiteouts and resolving every path inside the root. Guest ownership and modes are stored the way libkrun's macOS virtio-fs expects them (`user.containers.override_stat` xattrs), so `sudo` and friends see root-owned setuid binaries while the host files stay yours. Each layer (`image`, `agents`, your `layers`) runs in a build VM and is frozen as a snapshot; snapshot names carry the same cumulative digests as the Rust version. Sessions are APFS clones (`clonefile`) of the final snapshot, so a new workspace costs metadata, not a copy.
+- **Images and snapshots.** The configured image (default `ghcr.io/tobi/wrap:latest`) is pulled with go-containerregistry (manifest re-checked on every image-stage build, layers cached) and flattened into a rootfs directory, honoring OCI whiteouts and resolving every path inside the root. Guest ownership and modes are stored the way libkrun's macOS virtio-fs expects them (`user.containers.override_stat` xattrs), so `sudo` and friends see root-owned setuid binaries while the host files stay yours. Each layer (`image`, `agents`, your `layers`) runs in a build VM and is frozen as a snapshot; snapshot names carry the same cumulative digests as the Rust version. Sessions are APFS clones (`clonefile`) of the final snapshot, so a new workspace costs metadata, not a copy.
 - **Case-sensitive storage.** Linux images contain names that differ only by case. When `$BOX_HOME` (default `~/.box`) is on a case-insensitive APFS volume, box keeps its data in a Case-sensitive APFS sparse bundle (`~/.box/data.sparsebundle`) and attaches it on demand. No root is needed.
 - **VM process.** libkrun's `krun_start_enter` takes over the calling process and never returns, so each VM runs in its own `box __vm` process, detached from the terminal. That is what lets `box -c DIR read ...` reach a VM started by another invocation. Secret values reach that process over a pipe and stay in memory; nothing secret is written to disk.
 - **Guest agent.** `cmd/box-agent` is a static Linux binary embedded in `box` and installed at `/.box/box-agent`. libkrun's init runs it as the workload. It mounts the workspace (virtio-fs), configures `eth0`, sets the hostname and timezone, trusts box's CA, disables IPv6, then serves exec, pty attach, and file operations on a vsock port that libkrun maps to `~/.box/run/<sandbox>/agent.sock`.
@@ -67,10 +67,10 @@ box (host CLI)                         box __vm <sandbox>  (detached, one per ru
 ```text
 cmd/box              host CLI entry (also the `__vm` process)
 cmd/box-agent        guest agent (linux)
-internal/app          main.rs: layers, sessions, crossing, `box log`, CLI
-internal/config       config.rs: strict schema, overlays, secrets, allow edits
-internal/ui           ui.rs: live layer rail, crossing line, exposure report
-internal/methods      methods.rs: ls/read/grep/find/write/bash
+internal/app          CLI parsing, layer builds, sessions, crossing, `box log`
+internal/config       strict schema, overlay merging, secrets, `box allow` edits
+internal/ui           live layer rail, crossing line, exposure report
+internal/methods      fast methods: ls/read/grep/find/write/bash
 internal/sandbox      VM runtime: sandboxes, snapshots, exec/attach/fs client
 internal/vm           libkrun-go configuration and krun_start_enter
 internal/netstack     userspace network, policy, DNS, TLS interception
