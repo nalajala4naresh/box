@@ -150,7 +150,7 @@ func (s *Sandbox) Stream(opts ExecOptions) (<-chan Event, func(), error) {
 				var exit agent.Exit
 				json.Unmarshal(payload, &exit)
 				if exit.Message != "" {
-					events <- Event{Stderr: []byte("wrap: " + exit.Message + "\n")}
+					events <- Event{Stderr: []byte("box: " + exit.Message + "\n")}
 				}
 				events <- Event{Exited: true, Code: exit.Code}
 				return

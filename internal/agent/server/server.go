@@ -1,6 +1,6 @@
 //go:build linux || darwin
 
-// Package server is wrap-agent's request handling: exec on pipes or a pty,
+// Package server is box-agent's request handling: exec on pipes or a pty,
 // and the small file operations the host needs. It builds on macOS too so
 // the protocol can be tested without a VM.
 package server
@@ -420,7 +420,7 @@ func runWrite(c *agent.Conn, req agent.Request) {
 	if mode == 0 {
 		mode = 0o644
 	}
-	tmp := req.Path + ".wrap-tmp"
+	tmp := req.Path + ".box-tmp"
 	f, err := os.OpenFile(tmp, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, mode)
 	if err != nil {
 		fail(c, 1, "write %s: %v", req.Path, err)

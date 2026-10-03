@@ -1,4 +1,4 @@
-// Package netstack is the userspace network behind every wrap VM. libkrun
+// Package netstack is the userspace network behind every box VM. libkrun
 // hands it raw Ethernet frames over a datagram socket (virtio-net with a
 // unixgram backend); a gVisor TCP/IP stack terminates them, so every guest
 // connection is a host-side decision:

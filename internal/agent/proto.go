@@ -1,4 +1,4 @@
-// Package agent is the wire protocol between the host and wrap-agent, the
+// Package agent is the wire protocol between the host and box-agent, the
 // guest-side process libkrun runs as the VM workload.
 //
 // Every operation is one connection over the vsock port libkrun maps to a
@@ -15,7 +15,7 @@ import (
 	"sync"
 )
 
-// VsockPort is the guest vsock port wrap-agent listens on.
+// VsockPort is the guest vsock port box-agent listens on.
 const VsockPort = 10700
 
 // Version is bumped whenever the protocol changes incompatibly.
@@ -23,10 +23,10 @@ const Version = 1
 
 // BootPath is where the host writes the boot configuration inside the
 // rootfs before starting the VM.
-const BootPath = "/.wrap/boot.json"
+const BootPath = "/.box/boot.json"
 
 // AgentPath is where the host installs the agent binary inside the rootfs.
-const AgentPath = "/.wrap/wrap-agent"
+const AgentPath = "/.box/box-agent"
 
 // Frame types.
 const (

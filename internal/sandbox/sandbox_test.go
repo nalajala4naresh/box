@@ -18,7 +18,7 @@ import (
 func fakeVM(t *testing.T, spec Spec) *Sandbox {
 	t.Helper()
 	// Keep sun_path short.
-	root, err := os.MkdirTemp("/tmp", "wrapt")
+	root, err := os.MkdirTemp("/tmp", "boxt")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +71,7 @@ func TestEnvLayersImageSpecSecretsAndOverrides(t *testing.T) {
 func TestExecShellAndFilesThroughTheAgent(t *testing.T) {
 	workdir := t.TempDir()
 	sb := fakeVM(t, Spec{
-		Name:    "wrap-test",
+		Name:    "box-test",
 		User:    me(),
 		Shell:   "/bin/sh",
 		Workdir: workdir,
@@ -135,7 +135,7 @@ func TestExecShellAndFilesThroughTheAgent(t *testing.T) {
 }
 
 func TestStatusOfAStoppedSandbox(t *testing.T) {
-	root, _ := os.MkdirTemp("/tmp", "wrapt")
+	root, _ := os.MkdirTemp("/tmp", "boxt")
 	defer os.RemoveAll(root)
 	st := &store.Store{Root: root, Data: filepath.Join(root, "data")}
 	if StatusOf(st, "absent") != Stopped {
@@ -151,7 +151,7 @@ func TestStatusOfAStoppedSandbox(t *testing.T) {
 }
 
 func TestLogsParseTimestampAndBody(t *testing.T) {
-	root, _ := os.MkdirTemp("/tmp", "wrapt")
+	root, _ := os.MkdirTemp("/tmp", "boxt")
 	defer os.RemoveAll(root)
 	st := &store.Store{Root: root, Data: filepath.Join(root, "data")}
 	os.MkdirAll(LogsDir(st, "s"), 0o700)

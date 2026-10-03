@@ -9,7 +9,7 @@ import (
 )
 
 // Logger appends timestamped diagnostic lines to a session's system log.
-// `wrap log` reads them back. Lines never contain secret values.
+// `box log` reads them back. Lines never contain secret values.
 type Logger struct {
 	mu  sync.Mutex
 	out io.Writer

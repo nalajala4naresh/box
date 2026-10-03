@@ -88,12 +88,12 @@ func TestLiveRegionStreamsTheLatestFourLines(t *testing.T) {
 func TestStatusLinesCoverRemainingStates(t *testing.T) {
 	p := plain()
 	cases := map[string]string{
-		FormatRebuild(p, 4):                               "  rebuild  4 layers",
-		FormatSetup(p, "base"):                            "setting up base vm",
-		FormatSetup(p, "project"):                         "setting up project vm",
-		FormatLeftover(p, "wrap-build-languages", "busy"): "  leftover  wrap-build-languages  ·  busy",
-		FormatStopFailed(p, "timeout"):                    "  stop failed  ·  timeout",
-		FormatFatal(p, "layer languages failed"):          "wrap  layer languages failed",
+		FormatRebuild(p, 4):                              "  rebuild  4 layers",
+		FormatSetup(p, "base"):                           "setting up base vm",
+		FormatSetup(p, "project"):                        "setting up project vm",
+		FormatLeftover(p, "box-build-languages", "busy"): "  leftover  box-build-languages  ·  busy",
+		FormatStopFailed(p, "timeout"):                   "  stop failed  ·  timeout",
+		FormatFatal(p, "layer languages failed"):         "box  layer languages failed",
 	}
 	for got, want := range cases {
 		if got != want {
@@ -125,14 +125,14 @@ func TestColorIsOptionalDecoration(t *testing.T) {
 
 func TestLineBufHandlesCRAndANSI(t *testing.T) {
 	buf := NewLineBuf()
-	buf.Push("wrap: layer packages\n")
+	buf.Push("box: layer packages\n")
 	buf.Push("downloading\r")
 	buf.Push("\x1b[32m100%\x1b[0m\n")
 	buf.Push("partial")
 	if buf.Snippet() != "partial" {
 		t.Fatal(buf.Snippet())
 	}
-	if fmt.Sprint(buf.History()) != "[wrap: layer packages 100%]" {
+	if fmt.Sprint(buf.History()) != "[box: layer packages 100%]" {
 		t.Fatal(buf.History())
 	}
 }
@@ -156,7 +156,7 @@ func TestHistoryIsBounded(t *testing.T) {
 
 func exposureFixture(allowEverything bool) ExposureReport {
 	return ExposureReport{
-		Sources:         []string{"embedded defaults", "~/.config/wrap/config.yml"},
+		Sources:         []string{"embedded defaults", "~/.config/box/config.yml"},
 		AllowEverything: allowEverything,
 		Allow:           []string{"github.com", "mise.run"},
 		Deny:            []string{"blocked.example.com"},
@@ -174,7 +174,7 @@ func exposureFixture(allowEverything bool) ExposureReport {
 func TestExposuresListHostsWithCredentialLines(t *testing.T) {
 	text := FormatExposures(plain(), exposureFixture(false))
 	for _, want := range []string{
-		"config:\n  embedded defaults\n  ~/.config/wrap/config.yml\nnetwork-access: deny",
+		"config:\n  embedded defaults\n  ~/.config/box/config.yml\nnetwork-access: deny",
 		"  github.com\n    GH_TOKEN: Authorization: Bearer $GH_TOKEN (guest does not see this token)",
 		"  mise.run\n",
 		"  deny: blocked.example.com, everything else",

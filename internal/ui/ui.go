@@ -1,4 +1,4 @@
-// Package ui is wrap's pre-entry surface.
+// Package ui is box's pre-entry surface.
 //
 // Thesis: calibrated, threshold, quiet; never dashboard-like.
 // Signature: a layer rail that fills as snapshots land, then collapses into
@@ -57,7 +57,7 @@ const (
 // SpinPeriod is how often callers should Tick a live region.
 func SpinPeriod() time.Duration { return spinEvery }
 
-// Theme paints text with wrap's palette when color is enabled.
+// Theme paints text with box's palette when color is enabled.
 type Theme struct {
 	Color bool
 }
@@ -66,7 +66,7 @@ type Theme struct {
 // says otherwise.
 func DetectTheme() Theme { return Theme{Color: ColorEnabled()} }
 
-// Paint wraps text in a 24-bit foreground color.
+// Paint boxs text in a 24-bit foreground color.
 func (t Theme) Paint(hex uint32, text string) string {
 	if !t.Color || text == "" {
 		return text
@@ -547,13 +547,7 @@ func FormatStopFailed(theme Theme, err string) string {
 }
 
 func FormatFatal(theme Theme, err string) string {
-	// Sanitize per line so multi-line errors (console tails, hints) keep
-	// their shape; control characters inside a line are still stripped.
-	lines := strings.Split(err, "\n")
-	for i, line := range lines {
-		lines[i] = Sanitize(line)
-	}
-	return fmt.Sprintf("%s  %s", theme.Danger("wrap"), theme.Primary(strings.Join(lines, "\n")))
+	return fmt.Sprintf("%s  %s", theme.Danger("box"), theme.Primary(Sanitize(err)))
 }
 
 // ColorEnabled honors NO_COLOR, CLICOLOR=0, and CLICOLOR_FORCE=1, then falls
@@ -678,7 +672,7 @@ func StripANSI(s string) string {
 	return out.String()
 }
 
-// ExposureReport is everything a wrap session exposes to the guest, printed
+// ExposureReport is everything a box session exposes to the guest, printed
 // at entry.
 type ExposureReport struct {
 	// Sources is the merge stack that produced this session config.

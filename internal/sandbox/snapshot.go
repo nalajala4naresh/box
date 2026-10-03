@@ -78,10 +78,10 @@ func SnapshotFromSandbox(st *store.Store, name, sandboxName string) (Snapshot, e
 	if err := os.MkdirAll(staging, 0o700); err != nil {
 		return Snapshot{}, err
 	}
-	// The wrap plumbing under /.wrap is rewritten on every boot; drop it
+	// The box plumbing under /.box is rewritten on every boot; drop it
 	// so it never rides along into a shared snapshot.
 	rootfs := RootfsPath(st, sandboxName)
-	os.Remove(filepath.Join(rootfs, ".wrap", "boot.json"))
+	os.Remove(filepath.Join(rootfs, ".box", "boot.json"))
 	if err := os.Rename(rootfs, filepath.Join(staging, "rootfs")); err != nil {
 		store.RemoveAll(staging)
 		return Snapshot{}, fmt.Errorf("freeze %s: %w", sandboxName, err)

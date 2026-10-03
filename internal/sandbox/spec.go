@@ -1,6 +1,6 @@
-// Package sandbox is wrap's VM runtime: persistent named sandboxes whose
+// Package sandbox is box's VM runtime: persistent named sandboxes whose
 // rootfs is a copy-on-write clone of a snapshot or image, each booted by a
-// detached `wrap __vm` process that hosts libkrun and the VM's userspace
+// detached `box __vm` process that hosts libkrun and the VM's userspace
 // network. The host talks to the guest agent over a vsock-mapped socket.
 package sandbox
 

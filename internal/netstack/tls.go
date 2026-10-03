@@ -24,7 +24,7 @@ import (
 	"time"
 )
 
-// CA is wrap's local interception authority. Its certificate is installed
+// CA is box's local interception authority. Its certificate is installed
 // in every guest trust store; its key never leaves the host.
 type CA struct {
 	Cert    *x509.Certificate
@@ -54,7 +54,7 @@ func LoadOrCreateCA(dir string) (*CA, error) {
 	serial, _ := rand.Int(rand.Reader, new(big.Int).Lsh(big.NewInt(1), 127))
 	template := &x509.Certificate{
 		SerialNumber:          serial,
-		Subject:               pkix.Name{CommonName: "wrap local interception CA", Organization: []string{"wrap"}},
+		Subject:               pkix.Name{CommonName: "box local interception CA", Organization: []string{"box"}},
 		NotBefore:             time.Now().Add(-time.Hour),
 		NotAfter:              time.Now().AddDate(10, 0, 0),
 		IsCA:                  true,
@@ -85,7 +85,7 @@ func parseCA(certPEM, keyPEM []byte) (*CA, error) {
 	certBlock, _ := pem.Decode(certPEM)
 	keyBlock, _ := pem.Decode(keyPEM)
 	if certBlock == nil || keyBlock == nil {
-		return nil, errors.New("malformed wrap CA files")
+		return nil, errors.New("malformed box CA files")
 	}
 	cert, err := x509.ParseCertificate(certBlock.Bytes)
 	if err != nil {
@@ -250,7 +250,7 @@ func substituteBasic(value, placeholder string, real func() (string, bool)) stri
 	return scheme + " " + base64.StdEncoding.EncodeToString(replaced)
 }
 
-// interceptHTTPS terminates the guest's TLS with a wrap-minted certificate,
+// interceptHTTPS terminates the guest's TLS with a box-minted certificate,
 // substitutes secret stand-ins in each request's headers, and relays the
 // exchange to the real host over verified TLS.
 func (n *Network) interceptHTTPS(guest net.Conn, sni, upstreamAddr string, matching []Secret) {
