@@ -1,0 +1,4 @@
+sandbox:
+ image: nalajalanaresh/wrap:v1.0.0
+network:
+  allow: [proxy.golang.org,.github.com, mise.run,index.crates.io, static.crates.io] 
