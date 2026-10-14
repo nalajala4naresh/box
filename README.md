@@ -135,7 +135,7 @@ Use it from box:
 ```yaml
 # ~/.config/box/config.yml
 sandbox:
-  image: ghcr.io/nalajala4naresh/wrap:desktop
+  image: nalajala4naresh/wrap:v1.0.0
 network:
   ports: [6080]        # host 127.0.0.1:6080 -> guest noVNC; "HOST:GUEST" also works
 ```
@@ -147,8 +147,8 @@ box -- agent-browser open https://example.com     # then open http://127.0.0.1:6
 Or standalone:
 
 ```bash
-docker run -d -p 127.0.0.1:6080:6080 ghcr.io/nalajala4naresh/wrap:desktop   # desktop + chrome
-docker run -it ghcr.io/nalajala4naresh/wrap:desktop                         # shell as `user`; desktop autostarts
+docker run -d -p 127.0.0.1:6080:6080 nalajala4naresh/wrap:v1.0.0  # desktop + chrome
+docker run -it nalajala4naresh/wrap:v1.0.0                        # shell as `user`; desktop autostarts
 ```
 
 ## Network and credentials
